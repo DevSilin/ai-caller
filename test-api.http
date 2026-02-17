@@ -1,0 +1,104 @@
+### AI Caller API Tests
+### Используйте REST Client extension в VS Code или любой HTTP клиент
+
+@baseUrl = http://localhost:3000
+
+### =====================
+### TEST 1: Valid Call Start (должен работать ✅)
+### =====================
+POST {{baseUrl}}/calls/start
+Content-Type: application/json
+
+{
+  "firstName": "John",
+  "lastName": "Doe",
+  "phone": "+15551234567",
+  "county": "Los Angeles",
+  "state": "CA",
+  "acreage": 5.5,
+  "propertyAddress": "123 Main St"
+}
+
+### =====================
+### TEST 2: Invalid Phone Format (должен вернуть 400 ❌)
+### =====================
+POST {{baseUrl}}/calls/start
+Content-Type: application/json
+
+{
+  "firstName": "Jane",
+  "lastName": "Smith",
+  "phone": "invalid-phone",
+  "county": "San Diego",
+  "state": "CA"
+}
+
+### =====================
+### TEST 3: Missing Required Fields (должен вернуть 400 ❌)
+### =====================
+POST {{baseUrl}}/calls/start
+Content-Type: application/json
+
+{
+  "firstName": "Bob"
+}
+
+### =====================
+### TEST 4: Get All Calls (должен работать ✅)
+### =====================
+GET {{baseUrl}}/calls
+
+### =====================
+### TEST 5: Get Calls with Status Filter (должен работать ✅)
+### =====================
+GET {{baseUrl}}/calls?status=PENDING&limit=10
+
+### =====================
+### TEST 6: Invalid Status (должен вернуть 400 ❌)
+### =====================
+GET {{baseUrl}}/calls?status=INVALID_STATUS
+
+### =====================
+### TEST 7: Get Call by Invalid UUID (должен вернуть 400 ❌)
+### =====================
+GET {{baseUrl}}/calls/not-a-uuid
+
+### =====================
+### TEST 8: Webhook without Signature (должен вернуть 401 ❌)
+### =====================
+POST {{baseUrl}}/webhook/vapi
+Content-Type: application/json
+
+{
+  "type": "call-start",
+  "call": {
+    "id": "test-call-123"
+  }
+}
+
+### =====================
+### TEST 9: Webhook with Invalid Signature (должен вернуть 401 ❌)
+### =====================
+POST {{baseUrl}}/webhook/vapi
+Content-Type: application/json
+x-vapi-signature: invalid_signature_here
+
+{
+  "type": "call-start",
+  "call": {
+    "id": "test-call-123"
+  }
+}
+
+### =====================
+### TEST 10: Webhook with Invalid Event Type (должен вернуть 400 ❌)
+### =====================
+POST {{baseUrl}}/webhook/vapi
+Content-Type: application/json
+
+{
+  "type": "unknown-event-type",
+  "call": {
+    "id": "test-call-123"
+  }
+}
